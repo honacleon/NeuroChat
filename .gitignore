@@ -1,0 +1,52 @@
+# Arquivo .gitignore - Protege informações sensíveis
+
+# Chaves API e configurações sensíveis
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+venv_*/
+ENV/
+env.bak/
+venv.bak/
+
+# Notebooks Jupyter
+.ipynb_checkpoints
+
+# Logs
+*.log
+
+# Base de dados local
+*.db
+*.sqlite3
+
+# Arquivos temporários
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentos processados (opcional - remova se quiser versionar)
+# output/
+# chunks/
+
+# Arquivos PDF
+*.pdf
+pdf/
+docs/
