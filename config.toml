@@ -1,0 +1,18 @@
+# Configurações para NeuroChat AI
+
+[api_keys]
+# Google Gemini API
+gemini = "sua-chave-gemini-aqui"
+
+# Pinecone
+pinecone = "pcsk_6ZtdEb_HKDKGbj63sUAewngM8qxYHNQQeEXtecAyfP4xf2uvYQ3SqRVDvrjDXHk4jc9EF9"
+
+[database]
+pinecone_index = "neurochat"
+
+[paths]
+documents_folder = "output"
+
+[models]
+completion_model = "gemini-2.5-flash-lite"
+embedding_model = "models/embedding-001"
