@@ -14,20 +14,21 @@ except ImportError:
     import pinecone
     Pinecone = None
 
-from openai import OpenAI
+# Importações para LLMs
+import google.generativeai as genai
 
-class SimpleRAGChatbot:
-    """Chatbot RAG simples"""
+class GeminiRAGChatbot:
+    """Chatbot RAG usando Google Gemini"""
     
     def __init__(self):
         """Inicializar chatbot"""
-        # Configurar OpenAI
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.embedding_model = "text-embedding-3-small"
-        self.chat_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        # Configurar Gemini para completions e embeddings
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
+        self.embedding_model = "models/embedding-001"
         
         # Configurar Pinecone
-        self.index_name = os.getenv("PINECONE_INDEX_NAME", "firstry")
+        self.index_name = os.getenv("PINECONE_INDEX_NAME", "neurochat")
         
         try:
             if Pinecone is not None:
@@ -51,12 +52,13 @@ class SimpleRAGChatbot:
             return "❌ Erro: Banco de dados não conectado"
         
         try:
-            # 1. Criar embedding
-            embedding_response = self.openai_client.embeddings.create(
-                model=self.embedding_model,
-                input=question
+            # 1. Criar embedding usando Gemini
+            embedding_response = genai.embed_content(
+                model="models/embedding-001",
+                content=question,
+                task_type="RETRIEVAL_QUERY"
             )
-            query_vector = embedding_response.data[0].embedding
+            query_vector = embedding_response["embedding"]
             
             # 2. Buscar no Pinecone
             search_results = self.index.query(
@@ -82,15 +84,10 @@ Documentos:
 
 Responda de forma detalhada, clara e completa, utilizando exemplos quando útil. A resposta pode conter vários parágrafos:"""
 
-            # 5. Gerar resposta
-            response = self.openai_client.chat.completions.create(
-                model=self.chat_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-                max_tokens=800
-            )
+            # 5. Gerar resposta com Gemini
+            response = self.model.generate_content(prompt)
             
-            return response.choices[0].message.content.strip()
+            return response.text
             
         except Exception as e:
             return f"❌ Erro: {str(e)[:50]}..."
@@ -344,14 +341,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Verificar chaves
-if not os.getenv("OPENAI_API_KEY") or not os.getenv("PINECONE_API_KEY"):
-    st.error("🚨 ERRO: Configure as chaves no arquivo .env")
+if not os.getenv("PINECONE_API_KEY"):
+    st.error("🚨 ERRO: Configure a chave do Pinecone no arquivo .env")
     st.stop()
 
 # Inicializar chatbot
 if 'chatbot' not in st.session_state:
     with st.spinner("🔄 Inicializando sistema neural..."):
-        st.session_state.chatbot = SimpleRAGChatbot()
+        if not os.getenv("GEMINI_API_KEY"):
+            st.error("🚨 ERRO: Configure a chave do Gemini no arquivo .env")
+            st.stop()
+        st.session_state.chatbot = GeminiRAGChatbot()
 
 # LAYOUT PRINCIPAL EM COLUNAS
 col1, col2, col3 = st.columns([1, 3, 1])
@@ -469,6 +469,10 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
+    # Informação do modelo
+    st.markdown("### 🧠 **MODELO DE IA**")
+    st.markdown("**Gemini 2.5 Flash-Lite**", unsafe_allow_html=True)
+    
     # Estatísticas do sistema
     if hasattr(st.session_state, 'chatbot') and st.session_state.chatbot.index:
         try:
@@ -525,7 +529,7 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; margin-top: 40px; color: #78dbff; opacity: 0.7;">
     <div class="tech-text">
-        🚀 Powered by Honacleon Junior • OpenAI GPT-4 • Pinecone Vector DB • Streamlit
+        🚀 Powered by Honacleon Junior • Google Gemini 2.5 Flash-Lite • Pinecone Vector DB • Streamlit
     </div>
     <div style="margin-top: 10px;">
         <span class="pulse-dot"></span>
