@@ -2,102 +2,65 @@ import streamlit as st
 import os
 from typing import List, Dict
 import time
+import random
 
 # Carregar variáveis de ambiente
 from dotenv import load_dotenv
 load_dotenv()
 
-# Importações para RAG
-try:
-    from pinecone import Pinecone
-except ImportError:
-    import pinecone
-    Pinecone = None
+# Mock responses para demonstração
+DEMO_RESPONSES = [
+    "🤖 **Esta é uma demonstração do NeuroChat AI!** \n\nEsta versão é apenas para mostrar a interface futurística e as funcionalidades. Para usar o sistema completo com busca em documentos reais, você precisa:\n\n• Configurar sua própria chave do Pinecone\n• Configurar sua chave do Google Gemini\n• Fazer upload dos seus documentos\n\nO design foi criado para proporcionar uma experiência visual imersiva com gradientes neon, animações e efeitos holográficos!",
+    
+    "⚡ **Sistema Neural em Modo Demo** \n\nEsta interface demonstra como seria a experiência real do NeuroChat AI. O sistema real seria capaz de:\n\n• Processar documentos PDF, TXT, DOCX\n• Criar embeddings vetoriais inteligentes\n• Realizar buscas semânticas avançadas\n• Gerar respostas contextualizadas com IA\n\nTudo isso com esta interface cyberpunk incrível!",
+    
+    "🧠 **Exemplo de Resposta Neural** \n\nEm um ambiente real, o NeuroChat processaria sua pergunta através de:\n\n1. **Análise Semântica**: Compreendendo o significado profundo\n2. **Busca Vetorial**: Encontrando conteúdo relevante nos documentos\n3. **Síntese Inteligente**: Combinando informações de múltiplas fontes\n4. **Resposta Contextual**: Gerando uma resposta precisa e útil\n\nA magia acontece em milissegundos! ⚡",
+    
+    "🚀 **Demo: Capacidades do Sistema** \n\nO NeuroChat AI real seria capaz de responder perguntas como:\n\n• \"Quais são os principais tópicos dos documentos?\"\n• \"Encontre informações sobre X no arquivo Y\"\n• \"Resuma os pontos importantes do capítulo Z\"\n• \"Compare as diferentes abordagens mencionadas\"\n\nTudo isso processado por uma IA avançada com interface futurística!",
+    
+    "✨ **Demonstração Interativa** \n\nEsta é uma prévia do que seria possível com o sistema completo:\n\n🔍 **Busca Inteligente**: Encontra informações mesmo com perguntas complexas\n🎯 **Respostas Precisas**: Combina múltiplas fontes de forma coerente\n⚡ **Processamento Rápido**: Segundos para analisar grandes volumes de dados\n🎨 **Interface Imersiva**: Experiência visual única e envolvente\n\nUma verdadeira revolução em busca de documentos!"
+]
 
-# Importações para LLMs
-import google.generativeai as genai
-
-class GeminiRAGChatbot:
-    """Chatbot RAG usando Google Gemini"""
+class DemoGeminiRAGChatbot:
+    """Versão Demo do Chatbot RAG - Apenas para demonstração"""
     
     def __init__(self):
-        """Inicializar chatbot"""
-        # Configurar Gemini para completions e embeddings
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
-        self.embedding_model = "models/embedding-001"
+        """Inicializar chatbot em modo demo"""
+        self.demo_mode = True
+        self.total_vectors = random.randint(15000, 25000)
+        self.dimensions = 768
         
-        # Configurar Pinecone
-        self.index_name = os.getenv("PINECONE_INDEX_NAME", "neurochat")
-        
-        try:
-            if Pinecone is not None:
-                self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-                self.index = self.pc.Index(self.index_name)
-            else:
-                pinecone.init(api_key=os.getenv("PINECONE_API_KEY"))
-                self.index = pinecone.Index(self.index_name)
-            
-            # Teste de conexão
-            stats = self.index.describe_index_stats()
-            st.success(f"✅ Conectado: {stats['total_vector_count']} chunks")
-            
-        except Exception as e:
-            st.error(f"❌ Erro Pinecone: {e}")
-            self.index = None
+        # Simular conexão bem-sucedida
+        st.success(f"✅ Conectado (DEMO): {self.total_vectors:,} chunks simulados")
     
     def ask_question(self, question: str) -> str:
-        """Fazer pergunta simples"""
-        if not self.index:
-            return "❌ Erro: Banco de dados não conectado"
-        
+        """Simular resposta para demo"""
         try:
-            # 1. Criar embedding usando Gemini
-            embedding_response = genai.embed_content(
-                model="models/embedding-001",
-                content=question,
-                task_type="RETRIEVAL_QUERY"
-            )
-            query_vector = embedding_response["embedding"]
+            # Simular processamento
+            time.sleep(random.uniform(1.2, 2.5))
             
-            # 2. Buscar no Pinecone
-            search_results = self.index.query(
-                vector=query_vector,
-                top_k=3,
-                include_metadata=True
-            )
+            # Escolher resposta aleatória baseada na pergunta
+            if any(word in question.lower() for word in ['autor', 'quem', 'criador']):
+                return "📝 **Em um sistema real**, eu analisaria os metadados dos documentos para identificar autores, datas de criação e outras informações relevantes. Esta é uma demonstração da interface - configure suas chaves API para funcionalidade completa!"
             
-            if not search_results['matches']:
-                return "❓ Não encontrei informações sobre isso"
+            elif any(word in question.lower() for word in ['resumo', 'resumir', 'principais']):
+                return "📊 **Funcionalidade de Resumo (Demo)**: O sistema real extrairia os pontos principais de todos os documentos indexados, criaria um resumo inteligente e apresentaria as informações mais relevantes. A interface que você está vendo funcionaria com dados reais!"
             
-            # 3. Preparar contexto
-            context = ""
-            for match in search_results['matches']:
-                text = match['metadata'].get('text', '')
-                context += f"{text[:400]}\n\n"
+            elif any(word in question.lower() for word in ['como', 'tutorial', 'exemplo']):
+                return "🎓 **Tutorial Demo**: Esta interface mostra como seria usar o NeuroChat AI real. Você faria perguntas naturais, o sistema buscaria em seus documentos usando IA avançada, e retornaria respostas contextualizadas como esta - mas com seus dados reais!"
             
-            # 4. Prompt simples
-            prompt = f"""Pergunta: {question}
-
-Documentos:
-{context}
-
-Responda de forma detalhada, clara e completa, utilizando exemplos quando útil. A resposta pode conter vários parágrafos:"""
-
-            # 5. Gerar resposta com Gemini
-            response = self.model.generate_content(prompt)
-            
-            return response.text
-            
+            else:
+                return random.choice(DEMO_RESPONSES)
+                
         except Exception as e:
-            return f"❌ Erro: {str(e)[:50]}..."
+            return "🎭 **Modo Demonstração Ativo** - Esta é uma vitrine visual do NeuroChat AI. Configure as chaves API reais para funcionalidade completa!"
 
 # =================== DESIGN FUTURÍSTICO ÉPICO ===================
 
 # Configurar página com tema escuro
 st.set_page_config(
-    page_title="NeuroChat AI",
-    page_icon="🤖",
+    page_title="NeuroChat AI - Demo",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -322,7 +285,35 @@ st.markdown("""
         0% { background-position: 0% 0%; }
         100% { background-position: 400% 400%; }
     }
+    
+    /* DEMO BANNER */
+    .demo-banner {
+        background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+        border: 2px solid rgba(255, 193, 7, 0.5);
+        border-radius: 15px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+        animation: demo-glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes demo-glow {
+        0% { box-shadow: 0 5px 20px rgba(255, 193, 7, 0.2); }
+        100% { box-shadow: 0 8px 30px rgba(255, 193, 7, 0.4); }
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# BANNER DE DEMO
+st.markdown("""
+<div class="demo-banner">
+    <h3 style="color: #ffc107; margin: 0; font-family: 'Orbitron', monospace;">
+        🎭 MODO DEMONSTRAÇÃO ATIVO
+    </h3>
+    <p style="color: #ffca28; margin: 5px 0 0 0; font-family: 'Rajdhani', sans-serif;">
+        Esta é uma vitrine visual - Configure suas chaves API para funcionalidade completa
+    </p>
+</div>
 """, unsafe_allow_html=True)
 
 # HEADER ÉPICO COM ANIMAÇÕES
@@ -340,18 +331,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Verificar chaves
-if not os.getenv("PINECONE_API_KEY"):
-    st.error("🚨 ERRO: Configure a chave do Pinecone no arquivo .env")
-    st.stop()
-
-# Inicializar chatbot
+# Inicializar chatbot em modo demo
 if 'chatbot' not in st.session_state:
     with st.spinner("🔄 Inicializando sistema neural..."):
-        if not os.getenv("GEMINI_API_KEY"):
-            st.error("🚨 ERRO: Configure a chave do Gemini no arquivo .env")
-            st.stop()
-        st.session_state.chatbot = GeminiRAGChatbot()
+        st.session_state.chatbot = DemoGeminiRAGChatbot()
 
 # LAYOUT PRINCIPAL EM COLUNAS
 col1, col2, col3 = st.columns([1, 3, 1])
@@ -372,9 +355,10 @@ with col2:
         
         user_question = st.text_area(
             "",
-            placeholder="Ex: Quais são os autores dos documentos?",
+            placeholder="Ex: Quais são os recursos disponíveis no sistema?",
+            value="Como funciona este sistema de IA?",
             height=120,
-            help="💡 Digite sua pergunta e o sistema neural irá analisá-la"
+            help="💡 Digite sua pergunta e veja uma demonstração da interface"
         )
         
         # BOTÃO DE ENVIO ÉPICO
@@ -427,27 +411,16 @@ with col2:
         # RESPOSTA COM DESIGN ÉPICO
         st.markdown("### 🎯 **RESPOSTA DO SISTEMA:**")
         
-        if answer.startswith("❌"):
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, rgba(255, 0, 100, 0.1), rgba(255, 100, 0, 0.1)); 
-                        border: 2px solid rgba(255, 0, 100, 0.4); border-radius: 20px; padding: 25px; 
-                        box-shadow: 0 10px 30px rgba(255, 0, 100, 0.2);">
-                <div class="tech-text" style="color: #ff6b6b; font-size: 1.3rem;">
-                    {answer}
-                </div>
+        st.markdown(f"""
+        <div class="response-card">
+            <div class="tech-text" style="color: #00ff7f; font-size: 1.4rem; line-height: 1.6;">
+                {answer}
             </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div class="response-card">
-                <div class="tech-text" style="color: #00ff7f; font-size: 1.4rem; line-height: 1.6;">
-                    {answer}
-                </div>
-                <div style="text-align: right; margin-top: 15px; color: #78dbff; font-size: 0.9rem;">
-                    ⚡ Processado em {processing_time:.2f}s
-                </div>
+            <div style="text-align: right; margin-top: 15px; color: #78dbff; font-size: 0.9rem;">
+                ⚡ Processado em {processing_time:.2f}s (Demo Mode)
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
         
         # Salvar no histórico
         if 'history' not in st.session_state:
@@ -471,35 +444,38 @@ with st.sidebar:
     
     # Informação do modelo
     st.markdown("### 🧠 **MODELO DE IA**")
-    st.markdown("**Gemini 2.5 Flash-Lite**", unsafe_allow_html=True)
+    st.markdown("**Gemini 2.5 Flash-Lite (Demo)**")
     
-    # Estatísticas do sistema
-    if hasattr(st.session_state, 'chatbot') and st.session_state.chatbot.index:
-        try:
-            stats = st.session_state.chatbot.index.describe_index_stats()
-            
-            st.markdown(f"""
-            <div class="metric-container">
-                <h3 style="color: #00ffff; margin-bottom: 15px;">🧠 DADOS NEURAIS</h3>
-                <div style="color: #78dbff; font-size: 1.5rem; font-weight: bold;">
-                    {stats.get('total_vector_count', 0):,}
-                </div>
-                <div style="color: #78dbff; font-size: 0.9rem;">Vetores Indexados</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-            <div class="metric-container" style="margin-top: 15px;">
-                <h3 style="color: #ff00ff; margin-bottom: 15px;">📐 DIMENSÕES</h3>
-                <div style="color: #ff00ff; font-size: 1.5rem; font-weight: bold;">
-                    {stats.get('dimension', 0)}
-                </div>
-                <div style="color: #ff00ff; font-size: 0.9rem;">Espaço Vetorial</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        except:
-            st.warning("⚠️ Erro ao carregar estatísticas")
+    # Estatísticas simuladas
+    st.markdown(f"""
+    <div class="metric-container">
+        <h3 style="color: #00ffff; margin-bottom: 15px;">🧠 DADOS NEURAIS</h3>
+        <div style="color: #78dbff; font-size: 1.5rem; font-weight: bold;">
+            {st.session_state.chatbot.total_vectors:,}
+        </div>
+        <div style="color: #78dbff; font-size: 0.9rem;">Vetores Simulados</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div class="metric-container" style="margin-top: 15px;">
+        <h3 style="color: #ff00ff; margin-bottom: 15px;">📐 DIMENSÕES</h3>
+        <div style="color: #ff00ff; font-size: 1.5rem; font-weight: bold;">
+            {st.session_state.chatbot.dimensions}
+        </div>
+        <div style="color: #ff00ff; font-size: 0.9rem;">Espaço Vetorial</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Status Demo
+    st.markdown("""
+    <div class="demo-banner" style="margin-top: 20px;">
+        <h4 style="color: #ffc107; margin: 0;">🎭 STATUS</h4>
+        <p style="color: #ffca28; margin: 5px 0 0 0; font-size: 0.9rem;">
+            Modo Demonstração
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Controles do sistema
     st.markdown("### 🛠️ **CONTROLES**")
@@ -535,6 +511,9 @@ st.markdown("""
         <span class="pulse-dot"></span>
         <span class="pulse-dot"></span>
         <span class="pulse-dot"></span>
+    </div>
+    <div style="margin-top: 15px; font-size: 0.9rem; color: #ffc107;">
+        🎭 Esta é uma demonstração visual - Configure chaves API para funcionalidade completa
     </div>
 </div>
 """, unsafe_allow_html=True)
